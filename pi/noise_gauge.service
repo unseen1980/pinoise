@@ -1,0 +1,44 @@
+[Unit]
+Description=PiNoise HH_06.03 sound-level monitor
+After=local-fs.target
+StartLimitIntervalSec=60
+StartLimitBurst=10
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/pinoise/pi/noise_gauge.py
+WorkingDirectory=/opt/pinoise
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+User=root
+Group=root
+RuntimeDirectory=pinoise
+RuntimeDirectoryMode=0750
+UMask=0027
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=10
+# Sandbox. The application only reads its own files, writes its telemetry socket
+# in /run/pinoise and uses /dev for UART, framebuffer and touch, so PrivateDevices
+# is deliberately not set. Confirmed shutdown reaches systemd over a Unix socket.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateNetwork=yes
+RestrictAddressFamilies=AF_UNIX
+ProtectKernelModules=yes
+ProtectKernelTunables=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+# ProtectClock= is omitted: it installs a device allow-list that blocks the UART,
+# framebuffer and SPI touch devices.
+ProtectHostname=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+SystemCallArchitectures=native
+
+[Install]
+WantedBy=multi-user.target
